@@ -16,7 +16,7 @@ import java.io.File;
 
 public class FilterTests {
 
-    Logger logger = LogManager.getRootLogger();
+    private Logger logger = LogManager.getRootLogger();
 
     static final String SAMPLE = "SampleVideo_1280x720_1mb.mp4";
 
