@@ -1,3 +1,17 @@
+#IntelliJ
+*.iml
+.idea/
+
+#Gradle
+.gradletasknamecache
+.gradle/
+build/
+bin/
+
+#Image Extractor
+vlc/
+images/
+
 # Compiled class file
 *.class
 
