@@ -1,5 +1,7 @@
 package com.hoser.simple.player;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
@@ -9,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 
 public class SimplePlayer {
+    private static Logger logger = LogManager.getRootLogger();
 
     private final JFrame frame;
 
@@ -27,7 +30,7 @@ public class SimplePlayer {
 
                     @Override
                     public void playing(MediaPlayer mediaPlayer) {
-                        System.out.println("The media is playing");
+                        logger.debug("The media is playing");
                         super.playing(mediaPlayer);
                         frame.setTitle("A FUCKING MEDIA PLAYER");
                     }
@@ -35,22 +38,22 @@ public class SimplePlayer {
                     @Override
                     public void finished(MediaPlayer mediaPlayer) {
                         super.finished(mediaPlayer);
-                        System.out.println("The media has finished");
+                        logger.debug("The media has finished");
                         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
                     }
 
                     @Override
                     public void lengthChanged(MediaPlayer mediaPlayer, long newLength) {
                         super.lengthChanged(mediaPlayer, newLength);
-                        System.out.println("The length is: " + newLength);
+                        logger.debug("The length is: " + newLength);
                     }
 
                     @Override
                     public void snapshotTaken(MediaPlayer mediaPlayer, String filename) {
                         super.snapshotTaken(mediaPlayer, filename);
-                        System.out.println("Snapshot taken at: " + filename);
-                        mediaPlayer.pause();
-                        skip(mediaPlayer);
+                        logger.debug("Snapshot taken at: " + filename);
+                      //  mediaPlayer.pause();
+                        //skip(mediaPlayer);
 
                     }
 
@@ -59,11 +62,11 @@ public class SimplePlayer {
 
         MediaPlayer player = mediaPlayerComponent.getMediaPlayer();
         player.playMedia(filePath);
-        player.skip(500);
-        player.pause();
-        File imageFile = new File("C:\\workspaces\\hoser\\images\\image-3.png");
-        player.saveSnapshot(imageFile);
-        System.out.println("passed play command!");
+      //  player.skip(500);
+      //  player.pause();
+      //  File imageFile = new File("C:\\workspaces\\hoser\\images\\image-3.png");
+      //  player.saveSnapshot(imageFile);
+        logger.debug("passed play command!");
 
         //TODO use events and Java concurrent tools to replace this!
         try {
@@ -76,7 +79,7 @@ public class SimplePlayer {
 
     private void skip(MediaPlayer player) {
         player.skip(2000);
-        System.out.println("Skipped 2");
+        logger.debug("Skipped 2");
         player.pause();
         File imageFile = new File("C:\\workspaces\\hoser\\images\\image-2.png");
         player.saveSnapshot(imageFile);
