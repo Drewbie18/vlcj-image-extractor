@@ -13,6 +13,11 @@ repositories {
 
 dependencies {
 
+    //SLF4J for VLCJ
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+
+
     //need to set the JNA version to 4.5.x to work with VLCJ version 3.x
     implementation(group: 'net.java.dev.jna', name: 'jna', version: '4.5.1'){
         force = true
