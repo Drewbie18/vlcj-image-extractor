@@ -9,6 +9,7 @@ import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import javax.swing.*;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.nio.file.Paths;
 
 public class SimplePlayer {
     private static Logger logger = LogManager.getRootLogger();
@@ -20,7 +21,7 @@ public class SimplePlayer {
     public SimplePlayer(String filePath) {
         frame = new JFrame("My First Media Player");
         frame.setBounds(100, 100, 600, 400);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
         frame.setContentPane(mediaPlayerComponent);
         frame.setVisible(true);
@@ -52,9 +53,14 @@ public class SimplePlayer {
                     public void snapshotTaken(MediaPlayer mediaPlayer, String filename) {
                         super.snapshotTaken(mediaPlayer, filename);
                         logger.debug("Snapshot taken at: " + filename);
-                      //  mediaPlayer.pause();
+                        //  mediaPlayer.pause();
                         //skip(mediaPlayer);
+                    }
 
+                    @Override
+                    public void opening(MediaPlayer mediaPlayer) {
+                        super.opening(mediaPlayer);
+                        logger.debug("Opened media file: {}", mediaPlayer.getMediaDetails().toString());
                     }
 
                 }
@@ -62,10 +68,6 @@ public class SimplePlayer {
 
         MediaPlayer player = mediaPlayerComponent.getMediaPlayer();
         player.playMedia(filePath);
-      //  player.skip(500);
-      //  player.pause();
-      //  File imageFile = new File("C:\\workspaces\\hoser\\images\\image-3.png");
-      //  player.saveSnapshot(imageFile);
         logger.debug("passed play command!");
 
         //TODO use events and Java concurrent tools to replace this!
@@ -74,6 +76,7 @@ public class SimplePlayer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        player.saveSnapshot(getImageFile("1"));
 
     }
 
@@ -85,5 +88,11 @@ public class SimplePlayer {
         player.saveSnapshot(imageFile);
         player.play();
     }
+
+    private File getImageFile(String append) {
+        return Paths.get("./output", "image-" + append + ".png")
+                .toFile();
+    }
+
 
 }
