@@ -10,11 +10,16 @@ import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
 
 public class Main {
 
     private static Logger logger = LogManager.getRootLogger();
-    static final String SAMPLE = "SampleVideo_1280x720_1mb.mp4";
+    private static final String SAMPLE = "SampleVideo_1280x720_1mb.mp4";
+
+    private static CountDownLatch playingLatch = new CountDownLatch(1);
+    private static CountDownLatch snapshotTakenLatch = new CountDownLatch(1);
+
 
     public static void main(final String[] args) {
 
@@ -22,11 +27,23 @@ public class Main {
         NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), vlcPath);
         Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
 
-        Extractor extractor = new Extractor();
+        Extractor extractor = new Extractor(playingLatch, snapshotTakenLatch);
         String sampleVideoPath = getResourcePath("videos/" + SAMPLE);
 
-        extractor.getMediaPlayer().startMedia(sampleVideoPath);
+        if(extractor.getMediaPlayer().startMedia(sampleVideoPath)){
 
+            try {
+                playingLatch.await();
+                logger.debug("The playing latch is: {}", playingLatch.getCount());
+
+                extractor.getMediaPlayer().pause();
+                snapshotTakenLatch.await();
+                extractor.getMediaPlayer().stop();
+                extractor.getMediaPlayer().release();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static String getResourcePath(String resourceName){
@@ -38,7 +55,7 @@ public class Main {
             resourcePath = resourceFile.getAbsolutePath();
             logger.debug("The resource path is: {}", resourcePath);
         }catch (NullPointerException e){
-            logger.error("VLC player resource could not be found");
+            logger.error("Resource could not be found: {}", resourceName);
             System.exit(-1);
         }
         return resourcePath;

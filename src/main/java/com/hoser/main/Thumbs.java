@@ -20,12 +20,9 @@ public class Thumbs {
 
     private static Logger logger = LogManager.getRootLogger();
     private static final String SAMPLE = "SampleVideo_1280x720_1mb.mp4";
-    private static CountDownLatch snapshotTakenLatch = new CountDownLatch(1);
+
     private static CountDownLatch positionChangedLatch;
-    private static CountDownLatch pausedLatch = new CountDownLatch(1);
-
     private static CountDownLatch firstPassLatch = new CountDownLatch(1);
-
     private static AtomicInteger positionCounter = new AtomicInteger(0);
 
 
@@ -80,11 +77,6 @@ public class Thumbs {
             @Override
             public void paused(MediaPlayer mediaPlayer) {
                 logger.debug("The media has paused");
-            }
-
-            @Override
-            public void finished(MediaPlayer mediaPlayer) {
-                logger.debug("The media has finished");
             }
         });
 

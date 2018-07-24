@@ -84,7 +84,7 @@ public class SimplePlayer {
         player.skip(2000);
         logger.debug("Skipped 2");
         player.pause();
-        File imageFile = new File("C:\\workspaces\\hoser\\images\\image-2.png");
+        File imageFile = new File("C:\\workspaces\\hoser\\images\\image-3.png");
         player.saveSnapshot(imageFile);
         player.play();
     }

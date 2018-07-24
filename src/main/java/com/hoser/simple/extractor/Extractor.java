@@ -27,11 +27,16 @@ public class Extractor {
             "--no-snapshot-preview",    /* no blending in dummy vout */
     };
 
-    public Extractor() {
+    public Extractor(CountDownLatch playingLatch, CountDownLatch snapshotTakenLatch) {
         configureEventsListener();
+        this.playingLatch = playingLatch;
+        this.snapshotTakenLatch = snapshotTakenLatch;
     }
 
-    public final CountDownLatch snapshotTakenLatch = new CountDownLatch(1);
+    private final CountDownLatch snapshotTakenLatch;
+    private final CountDownLatch playingLatch;
+
+
 
     private MediaPlayerFactory factory = new MediaPlayerFactory(VLC_ARGS);
     private MediaPlayer mediaPlayer = factory.newHeadlessMediaPlayer();
@@ -47,6 +52,7 @@ public class Extractor {
                     @Override
                     public void playing(MediaPlayer mediaPlayer) {
                         logger.debug("The media is playing");
+                        playingLatch.countDown();
                     }
                     @Override
                     public void finished(MediaPlayer mediaPlayer) {
@@ -55,18 +61,19 @@ public class Extractor {
                     @Override
                     public void lengthChanged(MediaPlayer mediaPlayer, long newLength) {
                         logger.debug("The length is: {} ", newLength);
-                        mediaPlayer.saveSnapshot(getImageFile("3"));
-
-                        try {
-                            snapshotTakenLatch.await();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                     }
                     @Override
                     public void snapshotTaken(MediaPlayer mediaPlayer, String filename) {
                         logger.debug("Snapshot taken at: {}", filename);
                         snapshotTakenLatch.countDown();
+                    }
+
+                    @Override
+                    public void paused(MediaPlayer mediaPlayer) {
+                        super.paused(mediaPlayer);
+                        logger.debug("The media player has paused.");
+                        takeSnapshot("12");
+
                     }
                 }
         );}
@@ -77,6 +84,7 @@ public class Extractor {
     }
 
     public void takeSnapshot(String number){
+        logger.debug("Snapshot method");
         mediaPlayer.saveSnapshot(getImageFile(number));
     }
 }
