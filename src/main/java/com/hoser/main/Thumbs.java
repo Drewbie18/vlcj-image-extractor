@@ -82,7 +82,6 @@ public class Thumbs {
 
         if (mediaPlayer.startMedia(sampleVideoPath)) {
 
-
             int position = 0;
             while(position <= 10){
 
