@@ -1,5 +1,6 @@
 #Ouput images
 /output
+/extractor-output
 
 #IntelliJ
 *.iml
