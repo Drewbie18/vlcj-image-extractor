@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'com.hoser'
@@ -11,12 +12,34 @@ repositories {
     mavenCentral()
 }
 
+
+mainClassName = "com.hoser.main.ExtractorFlow"
+
+
+jar {
+    manifest{
+        attributes 'Main-Class': 'com.hoser.main.ExtractorFlow'
+    }
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-fat'
+    manifest {
+        attributes 'Implementation-Title': 'Basic Extractor Example with Dependencies',
+                'Implementation-Version': version,
+                'Main-Class': 'com.hoser.main.ExtractorFlow'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}
+
 dependencies {
 
     //SLF4J for VLCJ
     testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
-
 
     //need to set the JNA version to 4.5.x to work with VLCJ version 3.x
     implementation(group: 'net.java.dev.jna', name: 'jna', version: '4.5.1'){
