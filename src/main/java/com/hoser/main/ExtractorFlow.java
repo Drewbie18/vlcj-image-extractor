@@ -1,5 +1,6 @@
 package com.hoser.main;
 
+import com.hoser.image.extractor.utils.FileUtils;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import org.apache.logging.log4j.LogManager;
@@ -8,7 +9,6 @@ import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
-import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 
 import java.io.File;
@@ -22,7 +22,7 @@ public class ExtractorFlow {
     private static final String SHORT_SAMPLE = "SampleVideo_1280x720_1mb.mp4";
     private static final String LONG_SAMPLE = "SampleVideo_1280x720_5mb.mp4";
 
-    private static CountDownLatch snapShotLatch = new CountDownLatch(99);
+    private static CountDownLatch snapShotLatch = new CountDownLatch(9);
     private static AtomicInteger imageCounter = new AtomicInteger(0);
 
     private static final String[] VLC_ARGS = {
@@ -40,14 +40,19 @@ public class ExtractorFlow {
 
     public static void main(String[] args) {
 
-        String vlcPath = getResourcePath("vlc");
+        String videoName = LONG_SAMPLE;
+        File outputDir = FileUtils.createDirectory(videoName);
+
+
+
+        String vlcPath = getResourcePath("./vlc");
+        logger.debug("VLC PATH: {}", vlcPath);
         NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), vlcPath);
         Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
-
         MediaPlayerFactory factory = new MediaPlayerFactory(VLC_ARGS);
         MediaPlayer mediaPlayer = factory.newHeadlessMediaPlayer();
 
-        String sampleVideoPath = getResourcePath("videos/" + LONG_SAMPLE);
+        String sampleVideoPath = getResourcePath("./videos/" + LONG_SAMPLE);
 
         mediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
 
@@ -59,7 +64,10 @@ public class ExtractorFlow {
             @Override
             public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
                 logger.debug("position changed: {}", newPosition);
-                mediaPlayer.saveSnapshot(getImageFile(String.valueOf(imageCounter.get())));
+
+                String imageAppend = String.valueOf(imageCounter.get());
+                File imageFile = getImageFile(outputDir, imageAppend);
+                mediaPlayer.saveSnapshot(imageFile);
             }
 
             @Override
@@ -71,9 +79,9 @@ public class ExtractorFlow {
             public void snapshotTaken(MediaPlayer mediaPlayer, String filename) {
                 logger.debug("Snapshot was taken at: {}", filename);
                 snapShotLatch.countDown();
-                if(imageCounter.incrementAndGet() < 100){
+                if(imageCounter.incrementAndGet() < 10){
                     logger.debug("The counter is at {}", imageCounter.get());
-                    float position = imageCounter.get()/100f;
+                    float position = imageCounter.get()/10f;
                     mediaPlayer.setPosition(position);
                 }
             }
@@ -85,7 +93,6 @@ public class ExtractorFlow {
 
         if (mediaPlayer.startMedia(sampleVideoPath)) {
 
-            //set position
             mediaPlayer.setPosition(0.01f);
             try {
                 snapShotLatch.await();
@@ -93,22 +100,21 @@ public class ExtractorFlow {
                 e.printStackTrace();
             }
 
-            logger.debug("passed latched");
+            logger.debug("passed latch");
             mediaPlayer.stop();
         }
         mediaPlayer.release();
         factory.release();
     }
 
-    private static File getImageFile(String append) {
-        return Paths.get("./extractor-output", "image-" + append + ".png")
+    private static File getImageFile(File outputDir, String append) {
+        return Paths.get(outputDir.getAbsolutePath(), "image-" + append + ".png")
                 .toFile();
     }
 
-
     private static String getResourcePath(String resourceName) {
         String resourcePath = null;
-        ClassLoader classLoader = HeadlessMediaPlayer.class.getClassLoader();
+        ClassLoader classLoader = ExtractorFlow.class.getClassLoader();
 
         try {
             File resourceFile = new File(classLoader.getResource(resourceName).getFile());
