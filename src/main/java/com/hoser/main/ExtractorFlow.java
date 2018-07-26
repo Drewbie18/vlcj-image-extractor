@@ -1,6 +1,7 @@
 package com.hoser.main;
 
 import com.hoser.image.extractor.utils.FileUtils;
+import com.hoser.image.extractor.utils.LoadNativeVlc;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import org.apache.logging.log4j.LogManager;
@@ -43,12 +44,13 @@ public class ExtractorFlow {
         String videoName = LONG_SAMPLE;
         File outputDir = FileUtils.createDirectory(videoName);
 
+        boolean vlcLoaded = LoadNativeVlc.initializeVlc();
 
+        if(!vlcLoaded){
+            logger.error("Native VLC files were not found, exiting");
+            System.exit(-1);
+        }
 
-        String vlcPath = getResourcePath("./vlc");
-        logger.debug("VLC PATH: {}", vlcPath);
-        NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), vlcPath);
-        Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
         MediaPlayerFactory factory = new MediaPlayerFactory(VLC_ARGS);
         MediaPlayer mediaPlayer = factory.newHeadlessMediaPlayer();
 
