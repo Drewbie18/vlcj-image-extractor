@@ -15,7 +15,7 @@ import static junit.framework.TestCase.assertTrue;
 public class UtilsTest {
     private static Logger logger = LogManager.getRootLogger();
 
-    private static final String SAMPLE = "SampleVideo_1280x720_1mb.mp4";
+    private static final String SAMPLE = "sample-video/SampleVideo_1280x720_1mb.mp4";
 
     @Test
     public void createDirectoryTest(){
@@ -45,7 +45,7 @@ public class UtilsTest {
     public void fileExist(){
         try {
             String absPath = FileUtils.getVideoPath(SAMPLE);
-            assertTrue(absPath.contains(SAMPLE));
+            assertTrue(absPath.contains("SampleVideo"));
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
         }
