@@ -2,22 +2,18 @@ package com.hoser.main;
 
 import com.hoser.image.extractor.utils.FileUtils;
 import com.hoser.image.extractor.utils.LoadNativeVlc;
-import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
-import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ExtractorFlow {
+public class SimpleExtractor {
 
     private static Logger logger = LogManager.getRootLogger();
     private static final String SHORT_SAMPLE = "SampleVideo_1280x720_1mb.mp4";
@@ -116,7 +112,7 @@ public class ExtractorFlow {
 
     private static String getResourcePath(String resourceName) {
         String resourcePath = null;
-        ClassLoader classLoader = ExtractorFlow.class.getClassLoader();
+        ClassLoader classLoader = SimpleExtractor.class.getClassLoader();
 
         try {
             File resourceFile = new File(classLoader.getResource(resourceName).getFile());
