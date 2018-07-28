@@ -9,18 +9,23 @@ import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 
 import java.io.File;
-import java.nio.file.Paths;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SimpleExtractor {
 
     private static Logger logger = LogManager.getRootLogger();
-    private static final String SHORT_SAMPLE = "SampleVideo_1280x720_1mb.mp4";
-    private static final String LONG_SAMPLE = "SampleVideo_1280x720_5mb.mp4";
 
-    private static CountDownLatch snapShotLatch = new CountDownLatch(9);
+    private static CountDownLatch snapShotLatch;
     private static AtomicInteger imageCounter = new AtomicInteger(0);
+
+    private static final int DEFAULT_NUM_IMAGES = 10;
+    private static int numImages;
+    private static File outputDir;
+
+
 
     private static final String[] VLC_ARGS = {
             "--intf", "dummy",          /* no interface */
@@ -37,20 +42,56 @@ public class SimpleExtractor {
 
     public static void main(String[] args) {
 
-        String videoName = LONG_SAMPLE;
-        File outputDir = FileUtils.createDirectory(videoName);
+        if(args.length < 1){
+            logger.error("Missing argument, required video name or video absolute path");
+            System.exit(-1);
+        }
 
         boolean vlcLoaded = LoadNativeVlc.initializeVlc();
-
         if(!vlcLoaded){
             logger.error("Native VLC files were not found, exiting");
             System.exit(-1);
         }
 
+        String videoName = args[0];
+        try {
+            outputDir = FileUtils.createDirectory(videoName);
+        } catch (IOException e) {
+            logger.error("Failed to create image output directory: {}",
+                    outputDir.toString());
+            logger.error(e.getMessage());
+            System.exit(-1);
+        }
+
+
+        String videoPath = "";
+        try {
+            videoPath = FileUtils.getVideoPath(videoName);
+        } catch (FileNotFoundException e) {
+            logger.error(e.getMessage());
+            System.exit(-1);
+        }
+
+        if(args.length < 2){
+            logger.info("Second argument wasn't given using default number of images: {}",
+                    DEFAULT_NUM_IMAGES);
+            numImages = DEFAULT_NUM_IMAGES;
+        }else{
+            try{
+                numImages = Integer.valueOf(args[1]);
+            }catch (NumberFormatException e){
+                logger.error("Image number argument was invalid: {}, using default {}",
+                        args[1],
+                        DEFAULT_NUM_IMAGES);
+                numImages = DEFAULT_NUM_IMAGES;
+            }
+        }
+        snapShotLatch = new CountDownLatch(numImages);
+        logger.debug("Number of images: {}", numImages);
+
+
         MediaPlayerFactory factory = new MediaPlayerFactory(VLC_ARGS);
         MediaPlayer mediaPlayer = factory.newHeadlessMediaPlayer();
-
-        String sampleVideoPath = getResourcePath("./videos/" + LONG_SAMPLE);
 
         mediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
 
@@ -64,7 +105,7 @@ public class SimpleExtractor {
                 logger.debug("position changed: {}", newPosition);
 
                 String imageAppend = String.valueOf(imageCounter.get());
-                File imageFile = getImageFile(outputDir, imageAppend);
+                File imageFile = FileUtils.getImageFile(outputDir, imageAppend);
                 mediaPlayer.saveSnapshot(imageFile);
             }
 
@@ -75,54 +116,41 @@ public class SimpleExtractor {
 
             @Override
             public void snapshotTaken(MediaPlayer mediaPlayer, String filename) {
-                logger.debug("Snapshot was taken at: {}", filename);
+                logger.info("Snapshot was taken at: {}", filename);
                 snapShotLatch.countDown();
-                if(imageCounter.incrementAndGet() < 10){
-                    logger.debug("The counter is at {}", imageCounter.get());
-                    float position = imageCounter.get()/10f;
+                int count = imageCounter.incrementAndGet();
+                if(count <= numImages){
+                    float position = count/(float)numImages; //set position to % of video
                     mediaPlayer.setPosition(position);
                 }
             }
+
             @Override
             public void paused(MediaPlayer mediaPlayer) {
                 logger.debug("The media has paused");
+                mediaPlayer.stop();
             }
         });
 
-        if (mediaPlayer.startMedia(sampleVideoPath)) {
+        if (mediaPlayer.startMedia(videoPath)) {
 
-            mediaPlayer.setPosition(0.01f);
+            mediaPlayer.setPosition(0.00f);
             try {
                 snapShotLatch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.info("Snapshot latch is: {}", snapShotLatch.getCount());
+            } catch (InterruptedException e) { //fail as gracefully as possible
+               logger.error("Thread: {}, was interrupted waiting for all snapshots," +
+                               " this should not happen. Releasing resources.",
+                       Thread.currentThread().getName() );
+               logger.error(e.getMessage());
+               Thread.currentThread().interrupt();
+               mediaPlayer.release();
+               factory.release();
             }
-
-            logger.debug("passed latch");
-            mediaPlayer.stop();
         }
+
         mediaPlayer.release();
         factory.release();
+        System.exit(0);
     }
-
-    private static File getImageFile(File outputDir, String append) {
-        return Paths.get(outputDir.getAbsolutePath(), "image-" + append + ".png")
-                .toFile();
-    }
-
-    private static String getResourcePath(String resourceName) {
-        String resourcePath = null;
-        ClassLoader classLoader = SimpleExtractor.class.getClassLoader();
-
-        try {
-            File resourceFile = new File(classLoader.getResource(resourceName).getFile());
-            resourcePath = resourceFile.getAbsolutePath();
-            logger.debug("The resource path is: {}", resourcePath);
-        } catch (NullPointerException e) {
-            logger.error("Resource could not be found: {}", resourceName);
-            System.exit(-1);
-        }
-        return resourcePath;
-    }
-
 }
