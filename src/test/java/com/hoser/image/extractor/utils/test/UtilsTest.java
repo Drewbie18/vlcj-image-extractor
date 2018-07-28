@@ -52,8 +52,8 @@ public class UtilsTest {
     @Test
     public void fileExist() {
         try {
-            String absPath = FileUtils.getVideoPath(SAMPLE);
-            assertTrue(absPath.contains("SampleVideo"));
+            File videoFile = FileUtils.getVideoPath(SAMPLE);
+            assertTrue(videoFile.getAbsolutePath().contains("SampleVideo"));
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
         }

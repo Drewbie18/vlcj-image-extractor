@@ -25,8 +25,6 @@ public class SimpleExtractor {
     private static int numImages;
     private static File outputDir;
 
-
-
     private static final String[] VLC_ARGS = {
             "--intf", "dummy",          /* no interface */
             "--vout", "dummy",          /* we don't want video (output) */
@@ -54,23 +52,27 @@ public class SimpleExtractor {
         }
 
         String videoName = args[0];
-        try {
-            outputDir = FileUtils.createDirectory(videoName);
-        } catch (IOException e) {
-            logger.error("Failed to create image output directory: {}",
-                    outputDir.toString());
-            logger.error(e.getMessage());
-            System.exit(-1);
-        }
 
-
-        String videoPath = "";
+        File videoFile = null;
         try {
-            videoPath = FileUtils.getVideoPath(videoName);
+            videoFile = FileUtils.getVideoPath(videoName);
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
             System.exit(-1);
         }
+
+
+        try {
+            outputDir = FileUtils.createDirectory(videoFile.getName());
+        } catch (IOException e) {
+            logger.error("Failed to create image output directory: {}",
+                    videoName);
+            logger.error(e.getMessage());
+            System.exit(-1);
+        }
+
+
+
 
         if(args.length < 2){
             logger.info("Second argument wasn't given using default number of images: {}",
@@ -132,7 +134,7 @@ public class SimpleExtractor {
             }
         });
 
-        if (mediaPlayer.startMedia(videoPath)) {
+        if (mediaPlayer.startMedia(videoFile.getAbsolutePath())) {
 
             mediaPlayer.setPosition(0.00f);
             try {

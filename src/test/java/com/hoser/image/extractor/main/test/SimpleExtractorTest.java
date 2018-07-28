@@ -8,7 +8,7 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 public class SimpleExtractorTest {
 
     private static final String SAMPLE = "sample-video/SampleVideo_1280x720_1mb.mp4";
-
+//C:\workspaces\image-extractor\vlcj-image-extractor\extractor-output
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
