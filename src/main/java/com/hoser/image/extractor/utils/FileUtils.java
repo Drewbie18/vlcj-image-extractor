@@ -1,5 +1,6 @@
 package com.hoser.image.extractor.utils;
 
+import com.hoser.main.SimpleExtractor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,20 +32,15 @@ public class FileUtils {
      * @param videoName Name of the video that is to have images extracted.
      * @return a file representation of the new directory.
      */
-    public static File createDirectory(String videoName) {
+    public static File createDirectory(String videoName) throws IOException{
         String timeStamp = String.valueOf(System.currentTimeMillis());
         String folderName = videoName + "-" + timeStamp;
         String cwd = System.getProperty("user.dir");
         Path path = Paths.get(cwd, "extractor-output", folderName);
-        logger.debug(path.toString());
 
         if (!path.toFile().exists()) {
-            try {
                 Files.createDirectory(path);
-            } catch (IOException e) {
-                logger.error("Failed to create image output directory: {}", path);
-                logger.error(e.getMessage());
-            }
+                logger.info("Created image output directory: {}", path.toString());
         }
         return path.toFile();
     }
@@ -88,6 +84,27 @@ public class FileUtils {
         }
         logger.info("File found at: {}", ret);
         return ret;
+    }
+
+    public static File getImageFile(File outputDir, String append) {
+        return Paths.get(outputDir.getAbsolutePath(), "image-" + append + ".png")
+                .toFile();
+    }
+
+
+    public static String getResourcePath(String resourceName) {
+        String resourcePath = null;
+        ClassLoader classLoader = SimpleExtractor.class.getClassLoader();
+
+        try {
+            File resourceFile = new File(classLoader.getResource(resourceName).getFile());
+            resourcePath = resourceFile.getAbsolutePath();
+            logger.debug("The resource path is: {}", resourcePath);
+        } catch (NullPointerException e) {
+            logger.error("Resource could not be found: {}", resourceName);
+            System.exit(-1);
+        }
+        return resourcePath;
     }
 
 }
