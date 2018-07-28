@@ -10,7 +10,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.fail;
 
 public class UtilsTest {
     private static Logger logger = LogManager.getRootLogger();
@@ -18,31 +20,37 @@ public class UtilsTest {
     private static final String SAMPLE = "sample-video/SampleVideo_1280x720_1mb.mp4";
 
     @Test
-    public void createDirectoryTest(){
-        File file = FileUtils.createDirectory("mr.bear");
-        assertTrue(file.exists());
+    public void createDirectoryTest() {
+        File file = null;
+        try {
+            file = FileUtils.createDirectory("mr.bear");
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            fail("Directory was not created!");
+        }
+        assertNotNull(file);
         boolean deleted = false;
         try {
-            deleted  =  Files.deleteIfExists(file.toPath());
+            deleted = Files.deleteIfExists(file.toPath());
         } catch (IOException e) {
-           logger.error(e.getMessage());
+            logger.error(e.getMessage());
         }
         assertTrue(deleted);
     }
 
-    @Test(expected= FileNotFoundException.class)
-    public void fileNotExist() throws FileNotFoundException{
+    @Test(expected = FileNotFoundException.class)
+    public void fileNotExist() throws FileNotFoundException {
 
         try {
-            FileUtils.getVideoPath("NOTREAL");
+            FileUtils.getVideoPath("NOT_REAL");
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
-           throw  e;
+            throw e;
         }
     }
 
     @Test
-    public void fileExist(){
+    public void fileExist() {
         try {
             String absPath = FileUtils.getVideoPath(SAMPLE);
             assertTrue(absPath.contains("SampleVideo"));
