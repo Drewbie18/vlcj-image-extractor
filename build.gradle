@@ -12,25 +12,34 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = "com.hoser.main.ExtractorFlow"
+mainClassName = 'com.hoser.main.SimpleExtractor'
 
-jar {
-    manifest{
-        attributes 'Main-Class': 'com.hoser.main.ExtractorFlow'
+distZip {
+    into("$baseName-$version"){
+        into('bin'){
+            from './sample-video'
+            include 'sample_1.mp4'
+        }
     }
 }
 
-task fatJar(type: Jar) {
-    baseName = project.name + '-fat'
+task createOutputDir {
+    def docs = file("$buildDir/extractor-output")
+    outputs.dir docs
+    doLast {
+        docs.mkdirs()
+        new File(docs, "note.txt").write("Placeholder for directory")
+    }
+}
+
+applicationDistribution.from(createOutputDir) {
+    into "bin/extractor-output"
+}
+
+jar {
     manifest {
-        attributes 'Implementation-Title': 'Basic Extractor Example with Dependencies',
-                'Implementation-Version': version,
-                'Main-Class': 'com.hoser.main.ExtractorFlow'
+        attributes 'Main-Class': 'com.hoser.main.SimpleExtractor'
     }
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    with jar
 }
 
 dependencies {
@@ -40,17 +49,17 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
 
     //need to set the JNA version to 4.5.x to work with VLCJ version 3.x
-    implementation(group: 'net.java.dev.jna', name: 'jna', version: '4.5.1'){
+    implementation(group: 'net.java.dev.jna', name: 'jna', version: '4.5.1') {
         force = true
     }
-    testImplementation(group: 'net.java.dev.jna', name: 'jna', version: '4.5.1'){
-        force  = true
-    }
-    implementation(group: 'net.java.dev.jna', name: 'jna-platform', version: '4.5.1'){
+    testImplementation(group: 'net.java.dev.jna', name: 'jna', version: '4.5.1') {
         force = true
     }
-    testImplementation(group: 'net.java.dev.jna', name: 'jna-platform', version: '4.5.1'){
-        force  = true
+    implementation(group: 'net.java.dev.jna', name: 'jna-platform', version: '4.5.1') {
+        force = true
+    }
+    testImplementation(group: 'net.java.dev.jna', name: 'jna-platform', version: '4.5.1') {
+        force = true
     }
 
     implementation group: 'net.java.dev.jna', name: 'jna', version: '3.5.2'

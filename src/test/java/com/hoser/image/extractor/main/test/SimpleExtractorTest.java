@@ -7,18 +7,10 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 
 public class SimpleExtractorTest {
 
-    private static final String SAMPLE = "sample-video/SampleVideo_1280x720_1mb.mp4";
-//C:\workspaces\image-extractor\vlcj-image-extractor\extractor-output
+    private static final String SAMPLE = "sample-video/sample_1.mp4";
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
-
-    @Test
-   public void singleExtractorOneArgTest(){
-        exit.expectSystemExitWithStatus(0);
-        String[] args ={SAMPLE};
-        SimpleExtractor.main(args);
-    }
 
     @Test
     public void singleExtractorTwoArgsTest(){

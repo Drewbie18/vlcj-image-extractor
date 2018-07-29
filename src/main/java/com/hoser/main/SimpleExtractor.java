@@ -52,7 +52,6 @@ public class SimpleExtractor {
         }
 
         String videoName = args[0];
-
         File videoFile = null;
         try {
             videoFile = FileUtils.getVideoPath(videoName);
@@ -60,7 +59,6 @@ public class SimpleExtractor {
             logger.error(e.getMessage());
             System.exit(-1);
         }
-
 
         try {
             outputDir = FileUtils.createDirectory(videoFile.getName());
@@ -70,9 +68,6 @@ public class SimpleExtractor {
             logger.error(e.getMessage());
             System.exit(-1);
         }
-
-
-
 
         if(args.length < 2){
             logger.info("Second argument wasn't given using default number of images: {}",
@@ -91,7 +86,6 @@ public class SimpleExtractor {
         snapShotLatch = new CountDownLatch(numImages);
         logger.debug("Number of images: {}", numImages);
 
-
         MediaPlayerFactory factory = new MediaPlayerFactory(VLC_ARGS);
         MediaPlayer mediaPlayer = factory.newHeadlessMediaPlayer();
 
@@ -99,12 +93,18 @@ public class SimpleExtractor {
 
             @Override
             public void finished(MediaPlayer mediaPlayer) {
-                logger.debug("media finished");
+                logger.info("media finished");
+                int count = imageCounter.get();
+                if(count <= numImages){
+                    mediaPlayer.play();
+                }
+
             }
 
             @Override
             public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
-                logger.debug("position changed: {}", newPosition);
+                float percentPosition = Math.round(newPosition * 100);
+                logger.info("position changed: {}", percentPosition);
 
                 String imageAppend = String.valueOf(imageCounter.get());
                 File imageFile = FileUtils.getImageFile(outputDir, imageAppend);
@@ -113,7 +113,13 @@ public class SimpleExtractor {
 
             @Override
             public void playing(MediaPlayer mediaPlayer) {
-                logger.debug("The media is playing.");
+                logger.info("The media is playing.");
+                int count = imageCounter.get();
+                if(count <= numImages){
+                    logger.debug("setting position from play event listener");
+                    float position = count/(float)numImages; //set position to % of video
+                    mediaPlayer.setPosition(position);
+                }
             }
 
             @Override
@@ -136,7 +142,6 @@ public class SimpleExtractor {
 
         if (mediaPlayer.startMedia(videoFile.getAbsolutePath())) {
 
-            mediaPlayer.setPosition(0.00f);
             try {
                 snapShotLatch.await();
                 logger.info("Snapshot latch is: {}", snapShotLatch.getCount());
