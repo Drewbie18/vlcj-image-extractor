@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.hoser'
-version '1.0-SNAPSHOT'
+version 'v0.1-beta'
 
 sourceCompatibility = 1.8
 
@@ -14,6 +14,7 @@ repositories {
 
 mainClassName = 'com.hoser.main.SimpleExtractor'
 
+//copy a sample video to the dists
 distZip {
     into("$baseName-$version"){
         into('bin'){
@@ -23,6 +24,7 @@ distZip {
     }
 }
 
+//create extractor output folder for dists
 task createOutputDir {
     def docs = file("$buildDir/extractor-output")
     outputs.dir docs
@@ -76,5 +78,4 @@ dependencies {
     implementation group: 'uk.co.caprica', name: 'vlcj', version: '3.10.1'
     testImplementation group: 'uk.co.caprica', name: 'vlcj', version: '3.10.1'
     testImplementation 'com.github.stefanbirkner:system-rules:1.18.0'
-
 }

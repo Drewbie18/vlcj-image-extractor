@@ -69,22 +69,10 @@ public class SimpleExtractor {
             System.exit(-1);
         }
 
-        if(args.length < 2){
-            logger.info("Second argument wasn't given using default number of images: {}",
-                    DEFAULT_NUM_IMAGES);
-            numImages = DEFAULT_NUM_IMAGES;
-        }else{
-            try{
-                numImages = Integer.valueOf(args[1]);
-            }catch (NumberFormatException e){
-                logger.error("Image number argument was invalid: {}, using default {}",
-                        args[1],
-                        DEFAULT_NUM_IMAGES);
-                numImages = DEFAULT_NUM_IMAGES;
-            }
-        }
+        numImages = getNumImages(args);
+
         snapShotLatch = new CountDownLatch(numImages);
-        logger.debug("Number of images: {}", numImages);
+        logger.info("Number of images: {}", numImages);
 
         MediaPlayerFactory factory = new MediaPlayerFactory(VLC_ARGS);
         MediaPlayer mediaPlayer = factory.newHeadlessMediaPlayer();
@@ -103,8 +91,8 @@ public class SimpleExtractor {
 
             @Override
             public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
-                float percentPosition = Math.round(newPosition * 100);
-                logger.info("position changed: {}", percentPosition);
+                float percentPosition = newPosition * 100;
+                logger.info("position changed: {}%", percentPosition);
 
                 String imageAppend = String.valueOf(imageCounter.get());
                 File imageFile = FileUtils.getImageFile(outputDir, imageAppend);
@@ -160,4 +148,23 @@ public class SimpleExtractor {
         factory.release();
         System.exit(0);
     }
+
+
+    private static int getNumImages(String [] args){
+        int number = DEFAULT_NUM_IMAGES;
+        if(args.length < 2){
+            logger.info("Second argument wasn't given using default number of images: {}",
+                    DEFAULT_NUM_IMAGES);
+        }else{
+            try{
+                number = Integer.valueOf(args[1]);
+            }catch (NumberFormatException e){
+                logger.error("Image number argument was invalid: {}, using default {}",
+                        args[1],
+                        DEFAULT_NUM_IMAGES);
+            }
+        }
+        return number;
+    }
+
 }
