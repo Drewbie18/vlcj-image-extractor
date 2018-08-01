@@ -38,12 +38,6 @@ applicationDistribution.from(createOutputDir) {
     into "bin/extractor-output"
 }
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'com.hoser.main.SimpleExtractor'
-    }
-}
-
 dependencies {
 
     //SLF4J for VLCJ
