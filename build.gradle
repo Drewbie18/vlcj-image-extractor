@@ -14,36 +14,6 @@ repositories {
 
 mainClassName = 'com.hoser.main.SimpleExtractor'
 
-//copy a sample video to the dists
-distZip {
-    into("$baseName-$version"){
-        into('bin'){
-            from './sample-video'
-            include 'sample_1.mp4'
-        }
-    }
-}
-
-//create extractor output folder for dists
-task createOutputDir {
-    def docs = file("$buildDir/extractor-output")
-    outputs.dir docs
-    doLast {
-        docs.mkdirs()
-        new File(docs, "note.txt").write("Placeholder for directory")
-    }
-}
-
-applicationDistribution.from(createOutputDir) {
-    into "bin/extractor-output"
-}
-
-jar {
-    manifest {
-        attributes 'Main-Class': 'com.hoser.main.SimpleExtractor'
-    }
-}
-
 dependencies {
 
     //SLF4J for VLCJ
