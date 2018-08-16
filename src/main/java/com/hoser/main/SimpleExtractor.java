@@ -1,5 +1,6 @@
 package com.hoser.main;
 
+import com.hoser.image.extractor.utils.ArgsHandler;
 import com.hoser.image.extractor.utils.FileUtils;
 import com.hoser.image.extractor.utils.LoadNativeVlc;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +22,6 @@ public class SimpleExtractor {
     private static CountDownLatch snapShotLatch;
     private static AtomicInteger imageCounter = new AtomicInteger(0);
 
-    private static final int DEFAULT_NUM_IMAGES = 10;
     private static int numImages;
     private static File outputDir;
 
@@ -69,7 +69,7 @@ public class SimpleExtractor {
             System.exit(-1);
         }
 
-        numImages = getNumImages(args);
+        numImages = ArgsHandler.getNumImages(args);
 
         snapShotLatch = new CountDownLatch(numImages);
         logger.info("Number of images: {}", numImages);
@@ -150,21 +150,6 @@ public class SimpleExtractor {
     }
 
 
-    private static int getNumImages(String [] args){
-        int number = DEFAULT_NUM_IMAGES;
-        if(args.length < 2){
-            logger.info("Second argument wasn't given using default number of images: {}",
-                    DEFAULT_NUM_IMAGES);
-        }else{
-            try{
-                number = Integer.valueOf(args[1]);
-            }catch (NumberFormatException e){
-                logger.error("Image number argument was invalid: {}, using default {}",
-                        args[1],
-                        DEFAULT_NUM_IMAGES);
-            }
-        }
-        return number;
-    }
+
 
 }
