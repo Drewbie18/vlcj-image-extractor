@@ -45,8 +45,7 @@ public class SimpleExtractor {
             System.exit(-1);
         }
 
-        boolean vlcLoaded = LoadNativeVlc.initializeVlc();
-        if(!vlcLoaded){
+        if(!LoadNativeVlc.initializeVlc()){
             logger.error("Native VLC files were not found, exiting");
             System.exit(-1);
         }

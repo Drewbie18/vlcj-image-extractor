@@ -15,6 +15,11 @@ public class ArgsHandler {
 
     }
 
+    public static boolean checkInit(String [] args){
+        return  (args.length == 0 && LoadNativeVlc.initializeVlc());
+    }
+
+
     public static int getNumImages(String [] args){
         int number = DEFAULT_NUM_IMAGES;
         if(args.length < 2){
